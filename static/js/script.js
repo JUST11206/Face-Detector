@@ -1,5 +1,7 @@
+javascript
 // =========================================================
 // SMARTVISION PWA
+// YOLO-ONLY VERSION
 // =========================================================
 
 
@@ -22,7 +24,6 @@ const warningBox =
 const warningMessage =
     document.getElementById("warningMessage");
 
-
 const camera =
     document.getElementById("camera");
 
@@ -31,7 +32,6 @@ const output =
 
 const canvas =
     document.getElementById("canvas");
-
 
 const startBtn =
     document.getElementById("startBtn");
@@ -42,7 +42,6 @@ const stopBtn =
 const switchCameraBtn =
     document.getElementById("switchCameraBtn");
 
-
 const faceCount =
     document.getElementById("faceCount");
 
@@ -52,25 +51,20 @@ const fpsElement =
 const detectionStatus =
     document.getElementById("detectionStatus");
 
-
 const statusDot =
     document.getElementById("statusDot");
 
 const statusText =
     document.getElementById("statusText");
 
-
 const placeholder =
     document.getElementById("cameraPlaceholder");
-
 
 const cameraOverlay =
     document.getElementById("cameraOverlay");
 
-
 const overlayStatus =
     document.getElementById("overlayStatus");
-
 
 const installBtn =
     document.getElementById("installBtn");
@@ -111,6 +105,16 @@ let deferredPrompt = null;
 
 
 // =========================================================
+// SAFE ELEMENT HELPER
+// =========================================================
+
+function elementExists(element) {
+    return element !== null &&
+           element !== undefined;
+}
+
+
+// =========================================================
 // PWA INSTALL
 // =========================================================
 
@@ -122,7 +126,7 @@ window.addEventListener(
 
         deferredPrompt = event;
 
-        if (installBtn) {
+        if (elementExists(installBtn)) {
 
             installBtn.style.display =
                 "inline-flex";
@@ -133,27 +137,37 @@ window.addEventListener(
 );
 
 
-if (installBtn) {
+if (elementExists(installBtn)) {
 
     installBtn.addEventListener(
         "click",
         async () => {
 
             if (!deferredPrompt) {
-
                 return;
-
             }
 
-            deferredPrompt.prompt();
+            try {
 
-            const result =
-                await deferredPrompt.userChoice;
+                deferredPrompt.prompt();
 
-            console.log(
-                "PWA install result:",
-                result.outcome
-            );
+                const result =
+                    await deferredPrompt.userChoice;
+
+                console.log(
+                    "PWA install result:",
+                    result.outcome
+                );
+
+            }
+            catch (error) {
+
+                console.error(
+                    "PWA install error:",
+                    error
+                );
+
+            }
 
             deferredPrompt = null;
 
@@ -174,7 +188,7 @@ window.addEventListener(
             "SmartVision installed."
         );
 
-        if (installBtn) {
+        if (elementExists(installBtn)) {
 
             installBtn.style.display =
                 "none";
@@ -189,17 +203,23 @@ window.addEventListener(
 // START CAMERA
 // =========================================================
 
-startBtn.addEventListener(
-    "click",
-    startCamera
-);
+if (elementExists(startBtn)) {
+
+    startBtn.addEventListener(
+        "click",
+        startCamera
+    );
+
+}
 
 
 async function startCamera() {
 
     try {
 
-        // Stop existing stream
+        // -------------------------------------------------
+        // Stop previous stream
+        // -------------------------------------------------
 
         if (stream) {
 
@@ -208,7 +228,9 @@ async function startCamera() {
         }
 
 
-        // Check browser support
+        // -------------------------------------------------
+        // Browser support
+        // -------------------------------------------------
 
         if (
             !navigator.mediaDevices ||
@@ -222,7 +244,9 @@ async function startCamera() {
         }
 
 
+        // -------------------------------------------------
         // Request camera
+        // -------------------------------------------------
 
         stream =
             await navigator.mediaDevices
@@ -248,18 +272,20 @@ async function startCamera() {
                 });
 
 
-        // Connect camera
+        // -------------------------------------------------
+        // Connect stream
+        // -------------------------------------------------
 
         camera.srcObject =
             stream;
 
 
-        // Wait for video
-
         await camera.play();
 
 
+        // -------------------------------------------------
         // Show camera
+        // -------------------------------------------------
 
         camera.style.display =
             "block";
@@ -274,14 +300,18 @@ async function startCamera() {
             "flex";
 
 
+        // -------------------------------------------------
         // State
+        // -------------------------------------------------
 
         running = true;
 
         processing = false;
 
 
+        // -------------------------------------------------
         // Buttons
+        // -------------------------------------------------
 
         startBtn.disabled =
             true;
@@ -293,7 +323,9 @@ async function startCamera() {
             false;
 
 
+        // -------------------------------------------------
         // Status
+        // -------------------------------------------------
 
         statusText.textContent =
             "Camera Active";
@@ -313,7 +345,9 @@ async function startCamera() {
             "AI Monitoring";
 
 
+        // -------------------------------------------------
         // Reset FPS
+        // -------------------------------------------------
 
         frameCounter = 0;
 
@@ -321,7 +355,9 @@ async function startCamera() {
             performance.now();
 
 
-        // Start detection
+        // -------------------------------------------------
+        // Start YOLO detection
+        // -------------------------------------------------
 
         processFrame();
 
@@ -347,6 +383,7 @@ async function startCamera() {
                 "Camera permission was denied. Please allow camera access.";
 
         }
+
         else if (
             error.name ===
             "NotFoundError"
@@ -356,6 +393,7 @@ async function startCamera() {
                 "No camera was found on this device.";
 
         }
+
         else if (
             error.name ===
             "NotReadableError"
@@ -365,6 +403,7 @@ async function startCamera() {
                 "Camera is already being used by another application.";
 
         }
+
         else if (
             error.name ===
             "SecurityError"
@@ -372,6 +411,15 @@ async function startCamera() {
 
             message =
                 "Camera requires HTTPS or localhost.";
+
+        }
+
+        else if (
+            error.message
+        ) {
+
+            message =
+                error.message;
 
         }
 
@@ -387,10 +435,14 @@ async function startCamera() {
 // STOP CAMERA
 // =========================================================
 
-stopBtn.addEventListener(
-    "click",
-    stopCamera
-);
+if (elementExists(stopBtn)) {
+
+    stopBtn.addEventListener(
+        "click",
+        stopCamera
+    );
+
+}
 
 
 function stopCamera() {
@@ -407,12 +459,15 @@ function stopCamera() {
         null;
 
 
+    // -------------------------------------------------
+    // Hide camera
+    // -------------------------------------------------
+
     camera.style.display =
         "none";
 
     output.style.display =
         "none";
-
 
     placeholder.style.display =
         "block";
@@ -421,7 +476,9 @@ function stopCamera() {
         "none";
 
 
+    // -------------------------------------------------
     // Buttons
+    // -------------------------------------------------
 
     startBtn.disabled =
         false;
@@ -433,7 +490,9 @@ function stopCamera() {
         false;
 
 
+    // -------------------------------------------------
     // Status
+    // -------------------------------------------------
 
     statusText.textContent =
         "Camera Off";
@@ -442,10 +501,13 @@ function stopCamera() {
         "#ef4444";
 
 
+    // -------------------------------------------------
     // Statistics
+    // -------------------------------------------------
 
     faceCount.textContent =
         "0";
+
 
     phoneStatus.textContent =
         "None";
@@ -456,6 +518,7 @@ function stopCamera() {
 
     safetyStatus.textContent =
         "OFF";
+
 
     safetyBox.classList.remove(
         "warning-active"
@@ -473,16 +536,25 @@ function stopCamera() {
         "";
 
 
+    // -------------------------------------------------
     // Warning
+    // -------------------------------------------------
 
     warningBox.style.display =
         "none";
+
 
     warningMessage.textContent =
         "No warning";
 
 
+    overlayStatus.textContent =
+        "AI Monitoring";
+
+
+    // -------------------------------------------------
     // Stop voice
+    // -------------------------------------------------
 
     if (
         "speechSynthesis" in window
@@ -502,16 +574,18 @@ function stopCamera() {
 function stopExistingStream() {
 
     if (!stream) {
-
         return;
-
     }
 
 
     stream
         .getTracks()
         .forEach(
-            track => track.stop()
+            track => {
+
+                track.stop();
+
+            }
         );
 
 
@@ -524,75 +598,90 @@ function stopExistingStream() {
 // SWITCH CAMERA
 // =========================================================
 
-switchCameraBtn.addEventListener(
-    "click",
-    async () => {
+if (elementExists(switchCameraBtn)) {
 
-        currentFacingMode =
-            currentFacingMode === "user"
-                ? "environment"
-                : "user";
+    switchCameraBtn.addEventListener(
+        "click",
+        switchCamera
+    );
 
-
-        if (!running) {
-
-            return;
-
-        }
+}
 
 
-        try {
+async function switchCamera() {
 
-            stopExistingStream();
+    currentFacingMode =
+        currentFacingMode === "user"
+            ? "environment"
+            : "user";
 
 
-            stream =
-                await navigator.mediaDevices
-                    .getUserMedia({
+    if (!running) {
+        return;
+    }
 
-                        video: {
 
-                            width: {
-                                ideal: 640
-                            },
+    try {
 
-                            height: {
-                                ideal: 480
-                            },
+        // Stop old camera
 
-                            facingMode:
-                                currentFacingMode
+        stopExistingStream();
 
+
+        // Open new camera
+
+        stream =
+            await navigator.mediaDevices
+                .getUserMedia({
+
+                    video: {
+
+                        width: {
+                            ideal: 640
                         },
 
-                        audio: false
+                        height: {
+                            ideal: 480
+                        },
 
-                    });
+                        facingMode:
+                            currentFacingMode
 
+                    },
 
-            camera.srcObject =
-                stream;
+                    audio: false
 
-
-            await camera.play();
-
-        }
-        catch (error) {
-
-            console.error(
-                "Camera switch error:",
-                error
-            );
+                });
 
 
-            alert(
-                "Could not switch camera."
-            );
+        camera.srcObject =
+            stream;
 
-        }
+
+        await camera.play();
+
+
+        console.log(
+            "Camera switched to:",
+            currentFacingMode
+        );
 
     }
-);
+    catch (error) {
+
+        console.error(
+            "Camera switch error:",
+            error
+        );
+
+
+        alert(
+            "Could not switch camera."
+        );
+
+    }
+
+}
 
 
 // =========================================================
@@ -602,11 +691,13 @@ switchCameraBtn.addEventListener(
 async function processFrame() {
 
     if (!running) {
-
         return;
-
     }
 
+
+    // -------------------------------------------------
+    // Make sure video is ready
+    // -------------------------------------------------
 
     if (
         camera.readyState >=
@@ -627,6 +718,10 @@ async function processFrame() {
                     camera.videoHeight;
 
 
+                // -------------------------------------------------
+                // Invalid video size
+                // -------------------------------------------------
+
                 if (
                     width === 0 ||
                     height === 0
@@ -644,7 +739,9 @@ async function processFrame() {
                 }
 
 
+                // -------------------------------------------------
                 // Canvas
+                // -------------------------------------------------
 
                 canvas.width =
                     width;
@@ -655,14 +752,13 @@ async function processFrame() {
 
                 const ctx =
                     canvas.getContext(
-                        "2d",
-                        {
-                            willReadFrequently: false
-                        }
+                        "2d"
                     );
 
 
-                // Draw frame
+                // -------------------------------------------------
+                // Draw camera frame
+                // -------------------------------------------------
 
                 ctx.drawImage(
                     camera,
@@ -673,7 +769,9 @@ async function processFrame() {
                 );
 
 
-                // Convert to JPEG
+                // -------------------------------------------------
+                // Convert frame to JPEG
+                // -------------------------------------------------
 
                 const blob =
                     await new Promise(
@@ -698,7 +796,9 @@ async function processFrame() {
                 }
 
 
+                // -------------------------------------------------
                 // FormData
+                // -------------------------------------------------
 
                 const formData =
                     new FormData();
@@ -711,7 +811,9 @@ async function processFrame() {
                 );
 
 
+                // -------------------------------------------------
                 // Send to Flask
+                // -------------------------------------------------
 
                 const response =
                     await fetch(
@@ -735,36 +837,63 @@ async function processFrame() {
                 }
 
 
+                // -------------------------------------------------
+                // JSON response
+                // -------------------------------------------------
+
                 const data =
                     await response.json();
 
 
                 // =================================================
-                // RESPONSE
+                // YOLO RESPONSE
                 // =================================================
 
                 if (data.success) {
 
 
+                    // -------------------------------------------------
                     // Processed image
+                    // -------------------------------------------------
 
-                    output.src =
-                        "data:image/jpeg;base64," +
-                        data.image;
+                    if (data.image) {
 
+                        output.src =
+                            "data:image/jpeg;base64," +
+                            data.image;
 
-                    // Face
-
-                    faceCount.textContent =
-                        data.face_count;
+                    }
 
 
                     // =================================================
-                    // PHONE
+                    // FACE COUNT
+                    // =================================================
+                    // Kept for frontend compatibility.
+                    // YOLO-only backend may return 0.
                     // =================================================
 
                     if (
-                        data.phone_detected
+                        data.face_count !== undefined
+                    ) {
+
+                        faceCount.textContent =
+                            data.face_count;
+
+                    }
+                    else {
+
+                        faceCount.textContent =
+                            "0";
+
+                    }
+
+
+                    // =================================================
+                    // PHONE DETECTION
+                    // =================================================
+
+                    if (
+                        data.phone_detected === true
                     ) {
 
                         phoneStatus.textContent =
@@ -786,17 +915,22 @@ async function processFrame() {
 
 
                     // =================================================
-                    // SAFETY
+                    // SAFETY STATUS
                     // =================================================
 
+                    const status =
+                        data.status || "SAFE";
+
+
                     safetyStatus.textContent =
-                        data.status;
+                        status;
 
 
                     if (
-                        data.status ===
-                        "WARNING"
+                        status === "WARNING"
                     ) {
+
+                        // Warning UI
 
                         safetyBox.classList.add(
                             "warning-active"
@@ -808,12 +942,15 @@ async function processFrame() {
 
 
                         warningMessage.textContent =
-                            data.message;
+                            data.message ||
+                            "Mobile phone detected.";
 
 
                         overlayStatus.textContent =
                             "⚠ Phone Detected";
 
+
+                        // Voice warning
 
                         playWarning();
 
@@ -830,7 +967,8 @@ async function processFrame() {
 
 
                         warningMessage.textContent =
-                            data.message;
+                            data.message ||
+                            "No warning";
 
 
                         overlayStatus.textContent =
@@ -864,6 +1002,7 @@ async function processFrame() {
 
 
                         frameCounter = 0;
+
 
                         lastFrameTime =
                             currentTime;
@@ -900,6 +1039,10 @@ async function processFrame() {
     }
 
 
+    // -------------------------------------------------
+    // Continue detection
+    // -------------------------------------------------
+
     if (running) {
 
         setTimeout(
@@ -922,6 +1065,10 @@ function playWarning() {
         Date.now();
 
 
+    // -------------------------------------------------
+    // Cooldown
+    // -------------------------------------------------
+
     if (
         now - lastWarningTime <
         3000
@@ -936,6 +1083,10 @@ function playWarning() {
         now;
 
 
+    // -------------------------------------------------
+    // Browser support
+    // -------------------------------------------------
+
     if (
         !(
             "speechSynthesis"
@@ -948,8 +1099,14 @@ function playWarning() {
     }
 
 
+    // Stop previous speech
+
     window.speechSynthesis.cancel();
 
+
+    // -------------------------------------------------
+    // Warning message
+    // -------------------------------------------------
 
     const speech =
         new SpeechSynthesisUtterance(
@@ -986,3 +1143,30 @@ window.addEventListener(
 
     }
 );
+
+
+// =========================================================
+// PAGE VISIBILITY
+// =========================================================
+// Stop processing when user leaves the page.
+// Camera stream remains safely released.
+// =========================================================
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if (
+            document.hidden &&
+            running
+        ) {
+
+            console.log(
+                "Page hidden."
+            );
+
+        }
+
+    }
+);
+

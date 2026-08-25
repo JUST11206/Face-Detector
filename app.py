@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import base64
 
-from cvzone.FaceDetectionModule import FaceDetector
 from ultralytics import YOLO
 
 
@@ -16,24 +15,16 @@ app = Flask(__name__)
 
 
 # =========================================================
-# FACE DETECTOR
-# =========================================================
-
-face_detector = FaceDetector(
-    minDetectionCon=0.5,
-    modelSelection=0
-)
-
-
-# =========================================================
 # YOLO MODEL
 # =========================================================
 
 model = YOLO("yolo11n.pt")
 
 
-# COCO class ID
+# =========================================================
+# COCO CLASS ID
 # 67 = cell phone
+# =========================================================
 
 CELL_PHONE_CLASS = 67
 
@@ -70,7 +61,6 @@ def detect():
             "frame"
         )
 
-
         if file is None:
 
             return jsonify({
@@ -89,12 +79,10 @@ def detect():
 
         image_bytes = file.read()
 
-
         np_array = np.frombuffer(
             image_bytes,
             np.uint8
         )
-
 
         img = cv2.imdecode(
             np_array,
@@ -115,18 +103,17 @@ def detect():
 
 
         # =================================================
-        # FACE DETECTION
+        # FACE COUNT
+        # =================================================
+        #
+        # CVZone / MediaPipe removed because Render was
+        # failing due to libGLESv2.so.2.
+        #
+        # Keeping this field in the API so your existing
+        # frontend does not break.
         # =================================================
 
-        img, bboxs = \
-            face_detector.findFaces(
-                img
-            )
-
-
-        face_count = len(
-            bboxs
-        )
+        face_count = 0
 
 
         # =================================================
@@ -141,7 +128,6 @@ def detect():
 
 
         phone_detected = False
-
         phone_count = 0
 
 
@@ -152,7 +138,6 @@ def detect():
         for result in results:
 
             if result.boxes is None:
-
                 continue
 
 
@@ -161,7 +146,6 @@ def detect():
                 class_id = int(
                     box.cls[0].item()
                 )
-
 
                 confidence = float(
                     box.conf[0].item()
@@ -172,18 +156,17 @@ def detect():
                 # CELL PHONE
                 # -----------------------------------------
 
-                if (
-                    class_id ==
-                    CELL_PHONE_CLASS
-                ):
+                if class_id == CELL_PHONE_CLASS:
 
                     phone_detected = True
 
                     phone_count += 1
 
 
-                    coordinates = \
-                        box.xyxy[0].tolist()
+                    coordinates = (
+                        box.xyxy[0]
+                        .tolist()
+                    )
 
 
                     x1, y1, x2, y2 = map(
@@ -248,32 +231,29 @@ def detect():
 
         if phone_detected:
 
-            safety_status = \
-                "WARNING"
+            safety_status = "WARNING"
 
-
-            warning_message = \
+            warning_message = (
                 "Mobile phone detected!"
+            )
 
 
         elif face_count > 0:
 
-            safety_status = \
-                "SAFE"
+            safety_status = "SAFE"
 
-
-            warning_message = \
+            warning_message = (
                 "Face detected. No phone detected."
+            )
 
 
         else:
 
-            safety_status = \
-                "NO FACE"
+            safety_status = "NO FACE"
 
-
-            warning_message = \
+            warning_message = (
                 "No face detected."
+            )
 
 
         # =================================================
@@ -325,15 +305,14 @@ def detect():
         # ENCODE IMAGE
         # =================================================
 
-        success, buffer = \
-            cv2.imencode(
-                ".jpg",
-                img,
-                [
-                    cv2.IMWRITE_JPEG_QUALITY,
-                    80
-                ]
-            )
+        success, buffer = cv2.imencode(
+            ".jpg",
+            img,
+            [
+                cv2.IMWRITE_JPEG_QUALITY,
+                80
+            ]
+        )
 
 
         if not success:
@@ -352,12 +331,11 @@ def detect():
         # BASE64
         # =================================================
 
-        image_base64 = \
-            base64.b64encode(
-                buffer
-            ).decode(
-                "utf-8"
-            )
+        image_base64 = (
+            base64
+            .b64encode(buffer)
+            .decode("utf-8")
+        )
 
 
         # =================================================
@@ -414,11 +392,7 @@ def detect():
 if __name__ == "__main__":
 
     app.run(
-
         host="0.0.0.0",
-
         port=5000,
-
         debug=False
-
     )

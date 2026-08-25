@@ -1,7 +1,5 @@
 Flask
-opencv-python
-cvzone
-mediapipe
+opencv-python-headless
 numpy
 ultralytics
 gunicorn

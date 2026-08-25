@@ -358,7 +358,7 @@ async function startCamera() {
         // Start YOLO detection
         // -------------------------------------------------
 
-        //processFrame();
+        processFrame();
 
     }
     catch (error) {

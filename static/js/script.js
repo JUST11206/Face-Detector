@@ -1046,7 +1046,7 @@ async function processFrame() {
 
         setTimeout(
             processFrame,
-            80
+            1000
         );
 
     }

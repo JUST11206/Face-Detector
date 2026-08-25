@@ -290,7 +290,7 @@ async function startCamera() {
             "block";
 
         output.style.display =
-            "block";
+            "none";
 
         placeholder.style.display =
             "none";
@@ -358,7 +358,7 @@ async function startCamera() {
         // Start YOLO detection
         // -------------------------------------------------
 
-        processFrame();
+        //processFrame();
 
     }
     catch (error) {

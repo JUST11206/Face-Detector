@@ -983,3 +983,23 @@ button:focus-visible {
         transition-duration: 0.01ms !important;
     }
 }
+/* =========================================================
+   LIVE CAMERA
+========================================================= */
+
+#camera {
+    display: block !important;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: relative;
+    z-index: 2;
+}
+
+/* YOLO processed image is hidden initially */
+#output {
+    display: none !important;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

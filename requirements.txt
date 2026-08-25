@@ -4,3 +4,4 @@ cvzone
 mediapipe
 numpy
 ultralytics
+gunicorn

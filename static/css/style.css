@@ -1,0 +1,875 @@
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   BODY
+========================================================= */
+
+body {
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    background:
+        #f5f7fb;
+
+    color:
+        #1f2937;
+
+    min-height:
+        100vh;
+}
+
+
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+.navbar {
+
+    height: 70px;
+
+    background:
+        white;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    padding:
+        0 6%;
+}
+
+
+.logo {
+
+    font-size:
+        24px;
+
+    font-weight:
+        800;
+
+    color:
+        #111827;
+}
+
+
+.logo span {
+
+    color:
+        #6366f1;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    font-size:
+        14px;
+
+    font-weight:
+        600;
+}
+
+
+#statusDot {
+
+    width:
+        10px;
+
+    height:
+        10px;
+
+    border-radius:
+        50%;
+
+    background:
+        #ef4444;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+.container {
+
+    width:
+        90%;
+
+    max-width:
+        1300px;
+
+    margin:
+        auto;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero {
+
+    padding:
+        50px 0 35px;
+}
+
+
+.hero h1 {
+
+    font-size:
+        42px;
+
+    line-height:
+        1.2;
+
+    margin-bottom:
+        12px;
+}
+
+
+.hero h1 span {
+
+    color:
+        #6366f1;
+}
+
+
+.hero p {
+
+    color:
+        #6b7280;
+
+    font-size:
+        17px;
+
+    max-width:
+        700px;
+
+    line-height:
+        1.6;
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+.dashboard {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        2fr 1fr;
+
+    gap:
+        25px;
+
+    padding-bottom:
+        40px;
+}
+
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.camera-card,
+.stats-card {
+
+    background:
+        white;
+
+    border:
+        1px solid #e5e7eb;
+
+    border-radius:
+        18px;
+
+    padding:
+        22px;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.05);
+}
+
+
+/* =========================================================
+   CARD HEADER
+========================================================= */
+
+.card-header {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    margin-bottom:
+        18px;
+}
+
+
+.card-header h2,
+.stats-card h2 {
+
+    font-size:
+        20px;
+}
+
+
+.card-header p {
+
+    color:
+        #9ca3af;
+
+    margin-top:
+        5px;
+
+    font-size:
+        14px;
+}
+
+
+/* =========================================================
+   LIVE BADGE
+========================================================= */
+
+.live-badge {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+    background:
+        #fef2f2;
+
+    color:
+        #ef4444;
+
+    padding:
+        7px 12px;
+
+    border-radius:
+        20px;
+
+    font-size:
+        12px;
+
+    font-weight:
+        bold;
+}
+
+
+.live-badge span {
+
+    width:
+        7px;
+
+    height:
+        7px;
+
+    background:
+        #ef4444;
+
+    border-radius:
+        50%;
+}
+
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+.camera-container {
+
+    width:
+        100%;
+
+    aspect-ratio:
+        16 / 9;
+
+    background:
+        #111827;
+
+    border-radius:
+        14px;
+
+    overflow:
+        hidden;
+
+    position:
+        relative;
+}
+
+
+#camera,
+#output {
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    object-fit:
+        cover;
+}
+
+
+#camera {
+
+    display:
+        none;
+}
+
+
+#output {
+
+    display:
+        none;
+}
+
+
+/* =========================================================
+   CAMERA PLACEHOLDER
+========================================================= */
+
+.camera-placeholder {
+
+    position:
+        absolute;
+
+    top:
+        50%;
+
+    left:
+        50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    text-align:
+        center;
+
+    color:
+        white;
+
+    width:
+        100%;
+}
+
+
+.camera-icon {
+
+    font-size:
+        45px;
+
+    margin-bottom:
+        12px;
+}
+
+
+.camera-placeholder h3 {
+
+    margin-bottom:
+        6px;
+}
+
+
+.camera-placeholder p {
+
+    color:
+        #9ca3af;
+
+    font-size:
+        14px;
+}
+
+
+/* =========================================================
+   CAMERA CONTROLS
+========================================================= */
+
+.camera-controls {
+
+    display:
+        flex;
+
+    gap:
+        12px;
+
+    margin-top:
+        18px;
+}
+
+
+.btn {
+
+    border:
+        none;
+
+    padding:
+        12px 20px;
+
+    border-radius:
+        10px;
+
+    font-size:
+        14px;
+
+    font-weight:
+        600;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.2s;
+}
+
+
+.btn:hover {
+
+    transform:
+        translateY(-1px);
+}
+
+
+.btn:disabled {
+
+    opacity:
+        0.5;
+
+    cursor:
+        not-allowed;
+
+    transform:
+        none;
+}
+
+
+.primary {
+
+    background:
+        #6366f1;
+
+    color:
+        white;
+}
+
+
+.danger {
+
+    background:
+        #fee2e2;
+
+    color:
+        #dc2626;
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.stats-card h2 {
+
+    margin-bottom:
+        20px;
+}
+
+
+.stats-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr;
+
+    gap:
+        12px;
+}
+
+
+.stat-box {
+
+    background:
+        #f9fafb;
+
+    border:
+        1px solid #f0f0f0;
+
+    border-radius:
+        12px;
+
+    padding:
+        15px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        14px;
+
+    transition:
+        0.2s;
+}
+
+
+.stat-box:hover {
+
+    transform:
+        translateY(-2px);
+}
+
+
+.stat-icon {
+
+    width:
+        45px;
+
+    height:
+        45px;
+
+    background:
+        #eef2ff;
+
+    border-radius:
+        10px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    font-size:
+        22px;
+
+    flex-shrink:
+        0;
+}
+
+
+.stat-box p {
+
+    color:
+        #6b7280;
+
+    font-size:
+        13px;
+
+    margin-bottom:
+        4px;
+}
+
+
+.stat-box h3 {
+
+    font-size:
+        22px;
+}
+
+
+/* =========================================================
+   SAFETY WARNING
+========================================================= */
+
+.warning-box {
+
+    display:
+        none;
+
+    margin-top:
+        20px;
+
+    padding:
+        18px;
+
+    border-radius:
+        12px;
+
+    background:
+        #fee2e2;
+
+    border:
+        1px solid #fecaca;
+
+    color:
+        #b91c1c;
+
+    animation:
+        warningPulse 1s infinite;
+}
+
+
+.warning-box strong {
+
+    font-size:
+        16px;
+}
+
+
+.warning-box p {
+
+    margin-top:
+        5px;
+
+    font-size:
+        14px;
+}
+
+
+/* =========================================================
+   ACTIVE WARNING
+========================================================= */
+
+.warning-active {
+
+    background:
+        #ef4444 !important;
+
+    color:
+        white !important;
+
+    border-color:
+        #dc2626 !important;
+}
+
+
+/* =========================================================
+   WARNING ANIMATION
+========================================================= */
+
+@keyframes warningPulse {
+
+    0% {
+
+        transform:
+            scale(1);
+
+    }
+
+    50% {
+
+        transform:
+            scale(1.02);
+
+    }
+
+    100% {
+
+        transform:
+            scale(1);
+
+    }
+
+}
+
+
+/* =========================================================
+   INFORMATION
+========================================================= */
+
+.info-box {
+
+    margin-top:
+        25px;
+
+    background:
+        #f8fafc;
+
+    border-radius:
+        12px;
+
+    padding:
+        18px;
+}
+
+
+.info-box h3 {
+
+    margin-bottom:
+        10px;
+}
+
+
+.info-box p {
+
+    color:
+        #6b7280;
+
+    font-size:
+        14px;
+
+    line-height:
+        1.6;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .dashboard {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .navbar {
+
+        padding:
+            0 5%;
+
+    }
+
+
+    .logo {
+
+        font-size:
+            20px;
+
+    }
+
+
+    .hero {
+
+        padding-top:
+            30px;
+
+    }
+
+
+    .hero h1 {
+
+        font-size:
+            32px;
+
+    }
+
+
+    .hero p {
+
+        font-size:
+            15px;
+
+    }
+
+
+    .dashboard {
+
+        gap:
+            15px;
+
+    }
+
+
+    .camera-card,
+    .stats-card {
+
+        padding:
+            15px;
+
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .camera-controls {
+
+        flex-direction:
+            column;
+
+    }
+
+
+    .btn {
+
+        width:
+            100%;
+
+    }
+
+
+    .live-badge {
+
+        display:
+            none;
+
+    }
+
+}

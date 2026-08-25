@@ -1,0 +1,6 @@
+Flask
+opencv-python
+cvzone
+mediapipe
+numpy
+ultralytics

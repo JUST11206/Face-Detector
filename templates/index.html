@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Smart Vision - Safety Monitor</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         NAVBAR
+    ====================================================== -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            Smart<span>Vision</span>
+        </div>
+
+
+        <div class="status">
+
+            <span id="statusDot"></span>
+
+            <span id="statusText">
+                Camera Off
+            </span>
+
+        </div>
+
+    </nav>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="container">
+
+
+        <!-- =================================================
+             HERO
+        ================================================== -->
+
+        <section class="hero">
+
+            <div>
+
+                <h1>
+                    Smart
+                    <span>Safety Monitor</span>
+                </h1>
+
+                <p>
+                    Real-time face and mobile-phone
+                    detection using Python, Flask,
+                    OpenCV, CVZone and YOLO.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             DASHBOARD
+        ================================================== -->
+
+        <section class="dashboard">
+
+
+            <!-- =================================================
+                 CAMERA CARD
+            ================================================== -->
+
+            <div class="camera-card">
+
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Live Camera
+                        </h2>
+
+                        <p>
+                            AI-powered real-time monitoring
+                        </p>
+
+                    </div>
+
+
+                    <div class="live-badge">
+
+                        <span></span>
+
+                        LIVE
+
+                    </div>
+
+                </div>
+
+
+                <!-- CAMERA -->
+
+                <div class="camera-container">
+
+
+                    <!-- Browser camera -->
+
+                    <video
+                        id="camera"
+                        autoplay
+                        playsinline
+                    ></video>
+
+
+                    <!-- Processed camera result -->
+
+                    <img
+                        id="output"
+                        alt="AI Detection Result"
+                    >
+
+
+                    <!-- Placeholder -->
+
+                    <div
+                        id="cameraPlaceholder"
+                        class="camera-placeholder"
+                    >
+
+                        <div class="camera-icon">
+                            📷
+                        </div>
+
+                        <h3>
+                            Camera is Off
+                        </h3>
+
+                        <p>
+                            Click Start Camera to begin
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CAMERA CONTROLS -->
+
+                <div class="camera-controls">
+
+                    <button
+                        id="startBtn"
+                        class="btn primary"
+                    >
+                        ▶ Start Monitoring
+                    </button>
+
+
+                    <button
+                        id="stopBtn"
+                        class="btn danger"
+                        disabled
+                    >
+                        ■ Stop Monitoring
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 STATISTICS CARD
+            ================================================== -->
+
+            <div class="stats-card">
+
+
+                <h2>
+                    Safety Monitoring
+                </h2>
+
+
+                <div class="stats-grid">
+
+
+                    <!-- FACE -->
+
+                    <div class="stat-box">
+
+                        <div class="stat-icon">
+                            🙂
+                        </div>
+
+                        <div>
+
+                            <p>
+                                Faces
+                            </p>
+
+                            <h3 id="faceCount">
+                                0
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PHONE -->
+
+                    <div class="stat-box">
+
+                        <div class="stat-icon">
+                            📱
+                        </div>
+
+                        <div>
+
+                            <p>
+                                Phone
+                            </p>
+
+                            <h3 id="phoneStatus">
+                                None
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SAFETY -->
+
+                    <div
+                        class="stat-box safety-box"
+                        id="safetyBox"
+                    >
+
+                        <div class="stat-icon">
+                            🛡️
+                        </div>
+
+                        <div>
+
+                            <p>
+                                Safety
+                            </p>
+
+                            <h3 id="safetyStatus">
+                                OFF
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- FPS -->
+
+                    <div class="stat-box">
+
+                        <div class="stat-icon">
+                            ⚡
+                        </div>
+
+                        <div>
+
+                            <p>
+                                FPS
+                            </p>
+
+                            <h3 id="fps">
+                                0
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DETECTION -->
+
+                    <div class="stat-box">
+
+                        <div class="stat-icon">
+                            🎯
+                        </div>
+
+                        <div>
+
+                            <p>
+                                Detection
+                            </p>
+
+                            <h3 id="detectionStatus">
+                                OFF
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     WARNING
+                ================================================== -->
+
+                <div
+                    id="warningBox"
+                    class="warning-box"
+                >
+
+                    <strong>
+                        ⚠️ WARNING
+                    </strong>
+
+                    <p id="warningMessage">
+                        No warning
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     INFORMATION
+                ================================================== -->
+
+                <div class="info-box">
+
+                    <h3>
+                        Smart Safety Monitor
+                    </h3>
+
+                    <p>
+                        The system detects faces using
+                        CVZone and mobile phones using
+                        YOLO. If a phone is detected,
+                        the system generates a safety
+                        warning.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Hidden canvas used to capture frames -->
+
+    <canvas
+        id="canvas"
+        style="display: none;"
+    ></canvas>
+
+
+    <!-- JavaScript -->
+
+    <script
+        src="{{ url_for('static', filename='js/script.js') }}"
+    ></script>
+
+
+</body>
+
+</html>

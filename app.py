@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+
 import cv2
 import numpy as np
 import base64
@@ -6,6 +7,10 @@ import base64
 from cvzone.FaceDetectionModule import FaceDetector
 from ultralytics import YOLO
 
+
+# =========================================================
+# FLASK APP
+# =========================================================
 
 app = Flask(__name__)
 
@@ -21,34 +26,38 @@ face_detector = FaceDetector(
 
 
 # =========================================================
-# YOLO OBJECT DETECTOR
+# YOLO MODEL
 # =========================================================
-
-# YOLO will download the model automatically
-# the first time it is executed.
 
 model = YOLO("yolo11n.pt")
 
 
-# COCO dataset class ID
+# COCO class ID
 # 67 = cell phone
+
 CELL_PHONE_CLASS = 67
 
 
 # =========================================================
-# HOME PAGE
+# HOME
 # =========================================================
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+
+    return render_template(
+        "index.html"
+    )
 
 
 # =========================================================
 # DETECTION API
 # =========================================================
 
-@app.route("/detect", methods=["POST"])
+@app.route(
+    "/detect",
+    methods=["POST"]
+)
 def detect():
 
     try:
@@ -57,26 +66,35 @@ def detect():
         # RECEIVE FRAME
         # -------------------------------------------------
 
-        file = request.files.get("frame")
+        file = request.files.get(
+            "frame"
+        )
+
 
         if file is None:
 
             return jsonify({
+
                 "success": False,
-                "message": "No camera frame received."
+
+                "message":
+                    "No camera frame received."
+
             }), 400
 
 
         # -------------------------------------------------
-        # CONVERT IMAGE
+        # READ IMAGE
         # -------------------------------------------------
 
         image_bytes = file.read()
+
 
         np_array = np.frombuffer(
             image_bytes,
             np.uint8
         )
+
 
         img = cv2.imdecode(
             np_array,
@@ -87,8 +105,12 @@ def detect():
         if img is None:
 
             return jsonify({
+
                 "success": False,
-                "message": "Could not decode camera frame."
+
+                "message":
+                    "Could not decode camera frame."
+
             }), 400
 
 
@@ -96,9 +118,15 @@ def detect():
         # FACE DETECTION
         # =================================================
 
-        img, bboxs = face_detector.findFaces(img)
+        img, bboxs = \
+            face_detector.findFaces(
+                img
+            )
 
-        face_count = len(bboxs)
+
+        face_count = len(
+            bboxs
+        )
 
 
         # =================================================
@@ -113,12 +141,18 @@ def detect():
 
 
         phone_detected = False
+
         phone_count = 0
 
+
+        # -------------------------------------------------
+        # PROCESS YOLO RESULTS
+        # -------------------------------------------------
 
         for result in results:
 
             if result.boxes is None:
+
                 continue
 
 
@@ -127,6 +161,7 @@ def detect():
                 class_id = int(
                     box.cls[0].item()
                 )
+
 
                 confidence = float(
                     box.conf[0].item()
@@ -137,27 +172,46 @@ def detect():
                 # CELL PHONE
                 # -----------------------------------------
 
-                if class_id == CELL_PHONE_CLASS:
+                if (
+                    class_id ==
+                    CELL_PHONE_CLASS
+                ):
 
                     phone_detected = True
+
                     phone_count += 1
+
+
+                    coordinates = \
+                        box.xyxy[0].tolist()
 
 
                     x1, y1, x2, y2 = map(
                         int,
-                        box.xyxy[0].tolist()
+                        coordinates
                     )
 
 
-                    # Draw phone bounding box
+                    # -------------------------------------
+                    # PHONE BOX
+                    # -------------------------------------
+
                     cv2.rectangle(
                         img,
+
                         (x1, y1),
+
                         (x2, y2),
+
                         (0, 0, 255),
+
                         3
                     )
 
+
+                    # -------------------------------------
+                    # LABEL
+                    # -------------------------------------
 
                     label = (
                         f"PHONE "
@@ -167,11 +221,23 @@ def detect():
 
                     cv2.putText(
                         img,
+
                         label,
-                        (x1, max(y1 - 10, 25)),
+
+                        (
+                            x1,
+                            max(
+                                y1 - 10,
+                                25
+                            )
+                        ),
+
                         cv2.FONT_HERSHEY_SIMPLEX,
+
                         0.7,
+
                         (0, 0, 255),
+
                         2
                     )
 
@@ -182,129 +248,177 @@ def detect():
 
         if phone_detected:
 
-            safety_status = "WARNING"
+            safety_status = \
+                "WARNING"
 
-            warning_message = (
+
+            warning_message = \
                 "Mobile phone detected!"
-            )
 
 
         elif face_count > 0:
 
-            safety_status = "SAFE"
+            safety_status = \
+                "SAFE"
 
-            warning_message = (
-                "Driver detected. No phone detected."
-            )
+
+            warning_message = \
+                "Face detected. No phone detected."
 
 
         else:
 
-            safety_status = "NO FACE"
+            safety_status = \
+                "NO FACE"
 
-            warning_message = (
+
+            warning_message = \
                 "No face detected."
-            )
 
 
         # =================================================
-        # WARNING BANNER ON VIDEO
+        # WARNING BANNER
         # =================================================
 
         if phone_detected:
 
-            # Red banner
             cv2.rectangle(
                 img,
-                (0, 0),
-                (img.shape[1], 60),
+
+                (
+                    0,
+                    0
+                ),
+
+                (
+                    img.shape[1],
+                    60
+                ),
+
                 (0, 0, 255),
+
                 -1
             )
 
 
             cv2.putText(
                 img,
+
                 "WARNING: PHONE DETECTED",
-                (20, 40),
+
+                (
+                    20,
+                    40
+                ),
+
                 cv2.FONT_HERSHEY_SIMPLEX,
+
                 0.9,
+
                 (255, 255, 255),
+
                 2
             )
 
 
         # =================================================
-        # ENCODE RESULT IMAGE
+        # ENCODE IMAGE
         # =================================================
 
-        success, buffer = cv2.imencode(
-            ".jpg",
-            img,
-            [
-                cv2.IMWRITE_JPEG_QUALITY,
-                80
-            ]
-        )
+        success, buffer = \
+            cv2.imencode(
+                ".jpg",
+                img,
+                [
+                    cv2.IMWRITE_JPEG_QUALITY,
+                    80
+                ]
+            )
 
 
         if not success:
 
             return jsonify({
+
                 "success": False,
-                "message": "Could not encode processed image."
+
+                "message":
+                    "Could not encode processed image."
+
             }), 500
 
 
-        image_base64 = base64.b64encode(
-            buffer
-        ).decode("utf-8")
+        # =================================================
+        # BASE64
+        # =================================================
+
+        image_base64 = \
+            base64.b64encode(
+                buffer
+            ).decode(
+                "utf-8"
+            )
 
 
         # =================================================
-        # SEND RESULT TO FRONTEND
+        # RESPONSE
         # =================================================
 
         return jsonify({
 
             "success": True,
 
-            "face_count": face_count,
+            "face_count":
+                face_count,
 
-            "phone_detected": phone_detected,
+            "phone_detected":
+                phone_detected,
 
-            "phone_count": phone_count,
+            "phone_count":
+                phone_count,
 
-            "status": safety_status,
+            "status":
+                safety_status,
 
-            "message": warning_message,
+            "message":
+                warning_message,
 
-            "image": image_base64
+            "image":
+                image_base64
 
         })
 
 
     except Exception as e:
 
-        print("Detection error:", e)
+        print(
+            "Detection error:",
+            e
+        )
+
 
         return jsonify({
 
             "success": False,
 
-            "message": str(e)
+            "message":
+                str(e)
 
         }), 500
 
 
 # =========================================================
-# RUN APPLICATION
+# RUN
 # =========================================================
 
 if __name__ == "__main__":
 
     app.run(
-        debug=True,
+
         host="0.0.0.0",
-        port=5000
+
+        port=5000,
+
+        debug=True
+
     )

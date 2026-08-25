@@ -1,4 +1,9 @@
 /* =========================================================
+   SMARTVISION PWA
+   Mobile-first responsive design
+========================================================= */
+
+/* =========================================================
    RESET
 ========================================================= */
 
@@ -8,112 +13,107 @@
     box-sizing: border-box;
 }
 
-
-/* =========================================================
-   BODY
-========================================================= */
+html {
+    width: 100%;
+    min-height: 100%;
+    scroll-behavior: smooth;
+}
 
 body {
-
     font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
         Arial,
         sans-serif;
 
-    background:
-        #f5f7fb;
+    background: #f5f7fb;
+    color: #111827;
 
-    color:
-        #1f2937;
+    min-height: 100vh;
+    min-height: 100dvh;
 
-    min-height:
-        100vh;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+
+    overflow-x: hidden;
 }
 
 
 /* =========================================================
-   NAVBAR
+   APP NAVBAR
 ========================================================= */
 
 .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 
-    height: 70px;
+    width: 100%;
+    height: 64px;
 
-    background:
-        white;
+    background: rgba(255, 255, 255, 0.94);
 
-    border-bottom:
-        1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
 
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
     padding:
-        0 6%;
-}
+        0 max(16px, env(safe-area-inset-left))
+        0 max(16px, env(safe-area-inset-right));
 
-
-.logo {
-
-    font-size:
-        24px;
-
-    font-weight:
-        800;
-
-    color:
-        #111827;
-}
-
-
-.logo span {
-
-    color:
-        #6366f1;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
 }
 
 
 /* =========================================================
-   STATUS
+   LOGO
 ========================================================= */
 
-.status {
+.logo {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #111827;
+}
 
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        8px;
-
-    font-size:
-        14px;
-
-    font-weight:
-        600;
+.logo span {
+    color: #6366f1;
 }
 
 
+/* =========================================================
+   CAMERA STATUS
+========================================================= */
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    color: #6b7280;
+
+    white-space: nowrap;
+}
+
 #statusDot {
+    width: 9px;
+    height: 9px;
 
-    width:
-        10px;
+    border-radius: 50%;
 
-    height:
-        10px;
+    background: #ef4444;
 
-    border-radius:
-        50%;
-
-    background:
-        #ef4444;
+    box-shadow:
+        0 0 0 3px rgba(239, 68, 68, 0.12);
 }
 
 
@@ -122,15 +122,14 @@ body {
 ========================================================= */
 
 .container {
+    width: 100%;
+    max-width: 1400px;
 
-    width:
-        90%;
+    margin: 0 auto;
 
-    max-width:
-        1300px;
-
-    margin:
-        auto;
+    padding:
+        0 14px
+        calc(30px + env(safe-area-inset-bottom));
 }
 
 
@@ -139,45 +138,31 @@ body {
 ========================================================= */
 
 .hero {
-
-    padding:
-        50px 0 35px;
+    padding: 25px 4px 18px;
 }
-
 
 .hero h1 {
+    font-size: clamp(28px, 8vw, 44px);
 
-    font-size:
-        42px;
+    line-height: 1.12;
 
-    line-height:
-        1.2;
+    letter-spacing: -1.2px;
 
-    margin-bottom:
-        12px;
+    margin-bottom: 10px;
 }
-
 
 .hero h1 span {
-
-    color:
-        #6366f1;
+    color: #6366f1;
 }
 
-
 .hero p {
+    color: #6b7280;
 
-    color:
-        #6b7280;
+    font-size: 14px;
 
-    font-size:
-        17px;
+    line-height: 1.55;
 
-    max-width:
-        700px;
-
-    line-height:
-        1.6;
+    max-width: 720px;
 }
 
 
@@ -186,18 +171,12 @@ body {
 ========================================================= */
 
 .dashboard {
+    display: flex;
+    flex-direction: column;
 
-    display:
-        grid;
+    gap: 16px;
 
-    grid-template-columns:
-        2fr 1fr;
-
-    gap:
-        25px;
-
-    padding-bottom:
-        40px;
+    padding-bottom: 30px;
 }
 
 
@@ -207,21 +186,19 @@ body {
 
 .camera-card,
 .stats-card {
+    width: 100%;
 
-    background:
-        white;
+    background: #ffffff;
 
     border:
         1px solid #e5e7eb;
 
-    border-radius:
-        18px;
+    border-radius: 18px;
 
-    padding:
-        22px;
+    padding: 14px;
 
     box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.05);
+        0 5px 20px rgba(15, 23, 42, 0.06);
 }
 
 
@@ -230,39 +207,28 @@ body {
 ========================================================= */
 
 .card-header {
+    display: flex;
 
-    display:
-        flex;
+    align-items: center;
+    justify-content: space-between;
 
-    align-items:
-        center;
+    gap: 10px;
 
-    justify-content:
-        space-between;
-
-    margin-bottom:
-        18px;
+    margin-bottom: 13px;
 }
-
 
 .card-header h2,
 .stats-card h2 {
-
-    font-size:
-        20px;
+    font-size: 18px;
+    font-weight: 750;
 }
 
-
 .card-header p {
+    color: #9ca3af;
 
-    color:
-        #9ca3af;
+    margin-top: 4px;
 
-    margin-top:
-        5px;
-
-    font-size:
-        14px;
+    font-size: 12px;
 }
 
 
@@ -271,103 +237,106 @@ body {
 ========================================================= */
 
 .live-badge {
+    display: flex;
 
-    display:
-        flex;
+    align-items: center;
 
-    align-items:
-        center;
+    gap: 6px;
 
-    gap:
-        6px;
+    background: #fef2f2;
 
-    background:
-        #fef2f2;
+    color: #ef4444;
 
-    color:
-        #ef4444;
+    padding: 6px 9px;
 
-    padding:
-        7px 12px;
+    border-radius: 20px;
 
-    border-radius:
-        20px;
+    font-size: 10px;
 
-    font-size:
-        12px;
-
-    font-weight:
-        bold;
+    font-weight: 800;
 }
 
-
 .live-badge span {
+    width: 7px;
+    height: 7px;
 
-    width:
-        7px;
+    background: #ef4444;
 
-    height:
-        7px;
+    border-radius: 50%;
 
-    background:
-        #ef4444;
+    animation: livePulse 1.4s infinite;
+}
 
-    border-radius:
-        50%;
+@keyframes livePulse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.35;
+        transform: scale(0.75);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 
 /* =========================================================
-   CAMERA
+   CAMERA CONTAINER
 ========================================================= */
 
 .camera-container {
+    width: 100%;
 
-    width:
-        100%;
+    /*
+       Mobile camera ratio.
+       4:3 works better for phone cameras.
+    */
 
-    aspect-ratio:
-        16 / 9;
+    aspect-ratio: 4 / 3;
 
-    background:
-        #111827;
+    background: #0f172a;
 
-    border-radius:
-        14px;
+    border-radius: 14px;
 
-    overflow:
-        hidden;
+    overflow: hidden;
 
-    position:
-        relative;
+    position: relative;
+
+    isolation: isolate;
 }
 
+
+/* =========================================================
+   CAMERA + OUTPUT
+========================================================= */
 
 #camera,
 #output {
+    position: absolute;
 
-    width:
-        100%;
+    inset: 0;
 
-    height:
-        100%;
+    width: 100%;
+    height: 100%;
 
-    object-fit:
-        cover;
+    object-fit: cover;
+
+    border: none;
 }
-
 
 #camera {
-
-    display:
-        none;
+    display: none;
 }
 
-
 #output {
+    display: none;
 
-    display:
-        none;
+    background: #0f172a;
 }
 
 
@@ -376,54 +345,53 @@ body {
 ========================================================= */
 
 .camera-placeholder {
+    position: absolute;
 
-    position:
-        absolute;
+    inset: 0;
 
-    top:
-        50%;
+    display: flex;
 
-    left:
-        50%;
+    flex-direction: column;
 
-    transform:
-        translate(-50%, -50%);
+    align-items: center;
+    justify-content: center;
 
-    text-align:
-        center;
+    text-align: center;
 
-    color:
-        white;
+    color: #ffffff;
 
-    width:
-        100%;
+    padding: 20px;
 }
-
 
 .camera-icon {
+    width: 65px;
+    height: 65px;
 
-    font-size:
-        45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    margin-bottom:
-        12px;
+    background: rgba(255, 255, 255, 0.08);
+
+    border-radius: 18px;
+
+    font-size: 32px;
+
+    margin-bottom: 14px;
 }
-
 
 .camera-placeholder h3 {
+    font-size: 16px;
 
-    margin-bottom:
-        6px;
+    margin-bottom: 6px;
 }
 
-
 .camera-placeholder p {
+    color: #94a3b8;
 
-    color:
-        #9ca3af;
+    font-size: 12px;
 
-    font-size:
-        14px;
+    line-height: 1.5;
 }
 
 
@@ -432,239 +400,210 @@ body {
 ========================================================= */
 
 .camera-controls {
+    display: grid;
 
-    display:
-        flex;
+    grid-template-columns: 1fr 1fr;
 
-    gap:
-        12px;
+    gap: 9px;
 
-    margin-top:
-        18px;
-}
-
-
-.btn {
-
-    border:
-        none;
-
-    padding:
-        12px 20px;
-
-    border-radius:
-        10px;
-
-    font-size:
-        14px;
-
-    font-weight:
-        600;
-
-    cursor:
-        pointer;
-
-    transition:
-        0.2s;
-}
-
-
-.btn:hover {
-
-    transform:
-        translateY(-1px);
-}
-
-
-.btn:disabled {
-
-    opacity:
-        0.5;
-
-    cursor:
-        not-allowed;
-
-    transform:
-        none;
-}
-
-
-.primary {
-
-    background:
-        #6366f1;
-
-    color:
-        white;
-}
-
-
-.danger {
-
-    background:
-        #fee2e2;
-
-    color:
-        #dc2626;
+    margin-top: 12px;
 }
 
 
 /* =========================================================
-   STATISTICS
+   BUTTONS
+========================================================= */
+
+.btn {
+    min-height: 48px;
+
+    border: none;
+
+    padding: 12px 14px;
+
+    border-radius: 12px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    transition:
+        transform 0.15s ease,
+        opacity 0.15s ease,
+        box-shadow 0.15s ease;
+
+    touch-action: manipulation;
+
+    user-select: none;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   PRIMARY BUTTON
+========================================================= */
+
+.primary {
+    background: #6366f1;
+
+    color: #ffffff;
+
+    box-shadow:
+        0 5px 14px rgba(99, 102, 241, 0.25);
+}
+
+.primary:hover {
+    background: #4f46e5;
+}
+
+
+/* =========================================================
+   DANGER BUTTON
+========================================================= */
+
+.danger {
+    background: #fee2e2;
+
+    color: #dc2626;
+}
+
+.danger:hover {
+    background: #fecaca;
+}
+
+
+/* =========================================================
+   STATISTICS CARD
 ========================================================= */
 
 .stats-card h2 {
-
-    margin-bottom:
-        20px;
-}
-
-
-.stats-grid {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr;
-
-    gap:
-        12px;
-}
-
-
-.stat-box {
-
-    background:
-        #f9fafb;
-
-    border:
-        1px solid #f0f0f0;
-
-    border-radius:
-        12px;
-
-    padding:
-        15px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        14px;
-
-    transition:
-        0.2s;
-}
-
-
-.stat-box:hover {
-
-    transform:
-        translateY(-2px);
-}
-
-
-.stat-icon {
-
-    width:
-        45px;
-
-    height:
-        45px;
-
-    background:
-        #eef2ff;
-
-    border-radius:
-        10px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    font-size:
-        22px;
-
-    flex-shrink:
-        0;
-}
-
-
-.stat-box p {
-
-    color:
-        #6b7280;
-
-    font-size:
-        13px;
-
-    margin-bottom:
-        4px;
-}
-
-
-.stat-box h3 {
-
-    font-size:
-        22px;
+    margin-bottom: 13px;
 }
 
 
 /* =========================================================
-   SAFETY WARNING
+   STAT GRID
 ========================================================= */
 
-.warning-box {
+.stats-grid {
+    display: grid;
 
-    display:
-        none;
+    grid-template-columns:
+        repeat(2, 1fr);
 
-    margin-top:
-        20px;
+    gap: 9px;
+}
 
-    padding:
-        18px;
 
-    border-radius:
-        12px;
+/* =========================================================
+   STAT BOX
+========================================================= */
 
-    background:
-        #fee2e2;
+.stat-box {
+    min-width: 0;
+
+    background: #f8fafc;
 
     border:
-        1px solid #fecaca;
+        1px solid #edf0f4;
 
-    color:
-        #b91c1c;
+    border-radius: 13px;
 
-    animation:
-        warningPulse 1s infinite;
+    padding: 12px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    transition:
+        transform 0.15s ease,
+        background 0.2s ease;
+}
+
+.stat-box:active {
+    transform: scale(0.98);
 }
 
 
-.warning-box strong {
+/* =========================================================
+   STAT ICON
+========================================================= */
 
-    font-size:
-        16px;
+.stat-icon {
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
+
+    background: #eef2ff;
+
+    border-radius: 10px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 19px;
 }
 
 
-.warning-box p {
+/* =========================================================
+   STAT TEXT
+========================================================= */
 
-    margin-top:
-        5px;
+.stat-box p {
+    color: #6b7280;
 
-    font-size:
-        14px;
+    font-size: 11px;
+
+    margin-bottom: 3px;
+}
+
+.stat-box h3 {
+    font-size: 18px;
+
+    font-weight: 800;
+
+    line-height: 1.1;
+
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   SAFETY BOX
+========================================================= */
+
+.safety-box {
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
 
@@ -673,203 +612,374 @@ body {
 ========================================================= */
 
 .warning-active {
+    background: #ef4444 !important;
 
-    background:
-        #ef4444 !important;
+    color: #ffffff !important;
 
-    color:
-        white !important;
+    border-color: #dc2626 !important;
 
-    border-color:
-        #dc2626 !important;
+    animation: safetyPulse 1s infinite;
 }
 
+.warning-active p {
+    color: rgba(255, 255, 255, 0.8);
+}
 
-/* =========================================================
-   WARNING ANIMATION
-========================================================= */
+.warning-active .stat-icon {
+    background: rgba(255, 255, 255, 0.15);
+}
 
-@keyframes warningPulse {
-
+@keyframes safetyPulse {
     0% {
-
-        transform:
-            scale(1);
-
+        box-shadow:
+            0 0 0 0 rgba(239, 68, 68, 0.35);
     }
 
-    50% {
-
-        transform:
-            scale(1.02);
-
+    70% {
+        box-shadow:
+            0 0 0 8px rgba(239, 68, 68, 0);
     }
 
     100% {
-
-        transform:
-            scale(1);
-
+        box-shadow:
+            0 0 0 0 rgba(239, 68, 68, 0);
     }
-
 }
 
 
 /* =========================================================
-   INFORMATION
+   WARNING BOX
+========================================================= */
+
+.warning-box {
+    display: none;
+
+    margin-top: 12px;
+
+    padding: 14px;
+
+    border-radius: 13px;
+
+    background: #fee2e2;
+
+    border:
+        1px solid #fecaca;
+
+    color: #b91c1c;
+
+    animation:
+        warningPulse 1.2s infinite;
+}
+
+.warning-box strong {
+    display: block;
+
+    font-size: 13px;
+}
+
+.warning-box p {
+    margin-top: 5px;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+@keyframes warningPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.015);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+/* =========================================================
+   INFORMATION BOX
 ========================================================= */
 
 .info-box {
+    margin-top: 13px;
 
-    margin-top:
-        25px;
+    background: #f8fafc;
 
-    background:
-        #f8fafc;
+    border:
+        1px solid #eef2f7;
 
-    border-radius:
-        12px;
+    border-radius: 13px;
 
-    padding:
-        18px;
+    padding: 14px;
 }
-
 
 .info-box h3 {
+    font-size: 14px;
 
-    margin-bottom:
-        10px;
+    margin-bottom: 7px;
 }
-
 
 .info-box p {
+    color: #6b7280;
 
-    color:
-        #6b7280;
+    font-size: 12px;
 
-    font-size:
-        14px;
-
-    line-height:
-        1.6;
+    line-height: 1.6;
 }
 
 
 /* =========================================================
-   RESPONSIVE - TABLET
+   SMALL MOBILE
 ========================================================= */
 
-@media (max-width: 900px) {
-
-    .dashboard {
-
-        grid-template-columns:
-            1fr;
-
-    }
-
-    .stats-grid {
-
-        grid-template-columns:
-            repeat(2, 1fr);
-
-    }
-
-}
-
-
-/* =========================================================
-   RESPONSIVE - MOBILE
-========================================================= */
-
-@media (max-width: 600px) {
+@media (max-width: 380px) {
 
     .navbar {
-
-        padding:
-            0 5%;
-
+        height: 60px;
     }
-
 
     .logo {
-
-        font-size:
-            20px;
-
+        font-size: 19px;
     }
 
+    .status {
+        font-size: 11px;
+    }
 
     .hero {
-
-        padding-top:
-            30px;
-
+        padding-top: 20px;
     }
-
 
     .hero h1 {
-
-        font-size:
-            32px;
-
+        font-size: 27px;
     }
-
 
     .hero p {
-
-        font-size:
-            15px;
-
+        font-size: 13px;
     }
-
-
-    .dashboard {
-
-        gap:
-            15px;
-
-    }
-
 
     .camera-card,
     .stats-card {
-
-        padding:
-            15px;
-
+        padding: 12px;
     }
-
 
     .stats-grid {
-
-        grid-template-columns:
-            1fr;
-
+        grid-template-columns: 1fr;
     }
-
 
     .camera-controls {
+        grid-template-columns: 1fr;
+    }
+}
 
-        flex-direction:
-            column;
 
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (min-width: 601px) {
+
+    .container {
+        padding-left: 24px;
+        padding-right: 24px;
     }
 
+    .hero {
+        padding-top: 40px;
+    }
+
+    .hero h1 {
+        font-size: 38px;
+    }
+
+    .hero p {
+        font-size: 16px;
+    }
+
+    .camera-card,
+    .stats-card {
+        padding: 20px;
+    }
+
+    .camera-container {
+        aspect-ratio: 16 / 9;
+    }
+
+    .stats-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}
+
+
+/* =========================================================
+   DESKTOP
+========================================================= */
+
+@media (min-width: 901px) {
+
+    .navbar {
+        height: 70px;
+
+        padding-left: 4%;
+        padding-right: 4%;
+    }
+
+    .container {
+        width: 92%;
+
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .hero {
+        padding:
+            50px 0 30px;
+    }
+
+    .hero h1 {
+        font-size: 44px;
+    }
+
+    .dashboard {
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 2fr)
+            minmax(320px, 1fr);
+
+        gap: 24px;
+
+        align-items: start;
+    }
+
+    .camera-card,
+    .stats-card {
+        padding: 22px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .camera-controls {
+        display: flex;
+    }
 
     .btn {
+        min-width: 170px;
+    }
+}
 
-        width:
-            100%;
 
+/* =========================================================
+   LARGE DESKTOP
+========================================================= */
+
+@media (min-width: 1200px) {
+
+    .container {
+        width: 90%;
     }
 
+    .dashboard {
+        grid-template-columns:
+            minmax(0, 2.1fr)
+            minmax(350px, 1fr);
+    }
+}
 
-    .live-badge {
 
-        display:
-            none;
+/* =========================================================
+   PWA / MOBILE SAFE AREA
+========================================================= */
 
+@supports (padding: env(safe-area-inset-bottom)) {
+
+    .container {
+        padding-bottom:
+            calc(
+                30px +
+                env(safe-area-inset-bottom)
+            );
+    }
+}
+
+
+/* =========================================================
+   PWA STANDALONE MODE
+========================================================= */
+
+@media (display-mode: standalone) {
+
+    .navbar {
+        padding-top:
+            env(safe-area-inset-top);
+
+        height:
+            calc(
+                64px +
+                env(safe-area-inset-top)
+            );
     }
 
+    .container {
+        padding-bottom:
+            calc(
+                40px +
+                env(safe-area-inset-bottom)
+            );
+    }
+}
+
+
+/* =========================================================
+   DARK CAMERA AREA
+========================================================= */
+
+.camera-container::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    border-radius: 14px;
+
+    box-shadow:
+        inset 0 0 40px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+button:focus-visible {
+    outline:
+        3px solid rgba(99, 102, 241, 0.35);
+
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   REDUCE MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

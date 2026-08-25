@@ -1,4 +1,9 @@
 // =========================================================
+// SMARTVISION PWA
+// =========================================================
+
+
+// =========================================================
 // ELEMENTS
 // =========================================================
 
@@ -34,6 +39,9 @@ const startBtn =
 const stopBtn =
     document.getElementById("stopBtn");
 
+const switchCameraBtn =
+    document.getElementById("switchCameraBtn");
+
 
 const faceCount =
     document.getElementById("faceCount");
@@ -56,6 +64,18 @@ const placeholder =
     document.getElementById("cameraPlaceholder");
 
 
+const cameraOverlay =
+    document.getElementById("cameraOverlay");
+
+
+const overlayStatus =
+    document.getElementById("overlayStatus");
+
+
+const installBtn =
+    document.getElementById("installBtn");
+
+
 // =========================================================
 // VARIABLES
 // =========================================================
@@ -67,7 +87,12 @@ let running = false;
 let processing = false;
 
 
-// FPS variables
+// Current camera
+
+let currentFacingMode = "user";
+
+
+// FPS
 
 let lastFrameTime =
     performance.now();
@@ -80,120 +105,282 @@ let frameCounter = 0;
 let lastWarningTime = 0;
 
 
+// PWA install
+
+let deferredPrompt = null;
+
+
+// =========================================================
+// PWA INSTALL
+// =========================================================
+
+window.addEventListener(
+    "beforeinstallprompt",
+    event => {
+
+        event.preventDefault();
+
+        deferredPrompt = event;
+
+        if (installBtn) {
+
+            installBtn.style.display =
+                "inline-flex";
+
+        }
+
+    }
+);
+
+
+if (installBtn) {
+
+    installBtn.addEventListener(
+        "click",
+        async () => {
+
+            if (!deferredPrompt) {
+
+                return;
+
+            }
+
+            deferredPrompt.prompt();
+
+            const result =
+                await deferredPrompt.userChoice;
+
+            console.log(
+                "PWA install result:",
+                result.outcome
+            );
+
+            deferredPrompt = null;
+
+            installBtn.style.display =
+                "none";
+
+        }
+    );
+
+}
+
+
+window.addEventListener(
+    "appinstalled",
+    () => {
+
+        console.log(
+            "SmartVision installed."
+        );
+
+        if (installBtn) {
+
+            installBtn.style.display =
+                "none";
+
+        }
+
+    }
+);
+
+
 // =========================================================
 // START CAMERA
 // =========================================================
 
 startBtn.addEventListener(
     "click",
-    async () => {
+    startCamera
+);
 
-        try {
 
-            stream =
-                await navigator.mediaDevices
-                    .getUserMedia({
+async function startCamera() {
 
-                        video: {
+    try {
 
-                            width: {
-                                ideal: 640
-                            },
+        // Stop existing stream
 
-                            height: {
-                                ideal: 480
-                            },
+        if (stream) {
 
-                            facingMode: "user"
+            stopExistingStream();
 
+        }
+
+
+        // Check browser support
+
+        if (
+            !navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia
+        ) {
+
+            throw new Error(
+                "Camera API is not supported by this browser."
+            );
+
+        }
+
+
+        // Request camera
+
+        stream =
+            await navigator.mediaDevices
+                .getUserMedia({
+
+                    video: {
+
+                        width: {
+                            ideal: 640
                         },
 
-                        audio: false
+                        height: {
+                            ideal: 480
+                        },
 
-                    });
+                        facingMode:
+                            currentFacingMode
 
+                    },
 
-            // Connect camera stream
+                    audio: false
 
-            camera.srcObject = stream;
-
-
-            // Show camera
-
-            camera.style.display =
-                "block";
-
-            output.style.display =
-                "block";
+                });
 
 
-            placeholder.style.display =
-                "none";
+        // Connect camera
+
+        camera.srcObject =
+            stream;
 
 
-            // State
+        // Wait for video
 
-            running = true;
-
-            processing = false;
+        await camera.play();
 
 
-            // Buttons
+        // Show camera
 
-            startBtn.disabled =
-                true;
+        camera.style.display =
+            "block";
 
-            stopBtn.disabled =
-                false;
+        output.style.display =
+            "block";
 
+        placeholder.style.display =
+            "none";
 
-            // Status
-
-            statusText.textContent =
-                "Camera Active";
-
-            statusDot.style.background =
-                "#22c55e";
+        cameraOverlay.style.display =
+            "flex";
 
 
-            detectionStatus.textContent =
-                "ON";
+        // State
+
+        running = true;
+
+        processing = false;
 
 
-            detectionStatus.style.color =
-                "#16a34a";
+        // Buttons
+
+        startBtn.disabled =
+            true;
+
+        stopBtn.disabled =
+            false;
+
+        switchCameraBtn.disabled =
+            false;
 
 
-            // Reset FPS
+        // Status
 
-            frameCounter = 0;
+        statusText.textContent =
+            "Camera Active";
 
-            lastFrameTime =
-                performance.now();
-
-
-            // Start processing
-
-            processFrame();
+        statusDot.style.background =
+            "#22c55e";
 
 
-        }
-        catch (error) {
+        detectionStatus.textContent =
+            "ON";
 
-            console.error(
-                "Camera error:",
-                error
-            );
+        detectionStatus.style.color =
+            "#16a34a";
 
 
-            alert(
-                "Camera access denied or camera is not available."
-            );
+        overlayStatus.textContent =
+            "AI Monitoring";
 
-        }
+
+        // Reset FPS
+
+        frameCounter = 0;
+
+        lastFrameTime =
+            performance.now();
+
+
+        // Start detection
+
+        processFrame();
 
     }
-);
+    catch (error) {
+
+        console.error(
+            "Camera error:",
+            error
+        );
+
+
+        let message =
+            "Unable to access camera.";
+
+
+        if (
+            error.name ===
+            "NotAllowedError"
+        ) {
+
+            message =
+                "Camera permission was denied. Please allow camera access.";
+
+        }
+        else if (
+            error.name ===
+            "NotFoundError"
+        ) {
+
+            message =
+                "No camera was found on this device.";
+
+        }
+        else if (
+            error.name ===
+            "NotReadableError"
+        ) {
+
+            message =
+                "Camera is already being used by another application.";
+
+        }
+        else if (
+            error.name ===
+            "SecurityError"
+        ) {
+
+            message =
+                "Camera requires HTTPS or localhost.";
+
+        }
+
+
+        alert(message);
+
+    }
+
+}
 
 
 // =========================================================
@@ -213,27 +400,12 @@ function stopCamera() {
     processing = false;
 
 
-    // Stop camera tracks
-
-    if (stream) {
-
-        stream
-            .getTracks()
-            .forEach(
-                track => track.stop()
-            );
-
-        stream = null;
-
-    }
+    stopExistingStream();
 
 
-    // Remove video stream
+    camera.srcObject =
+        null;
 
-    camera.srcObject = null;
-
-
-    // Hide camera
 
     camera.style.display =
         "none";
@@ -245,6 +417,9 @@ function stopCamera() {
     placeholder.style.display =
         "block";
 
+    cameraOverlay.style.display =
+        "none";
+
 
     // Buttons
 
@@ -253,6 +428,9 @@ function stopCamera() {
 
     stopBtn.disabled =
         true;
+
+    switchCameraBtn.disabled =
+        false;
 
 
     // Status
@@ -264,7 +442,7 @@ function stopCamera() {
         "#ef4444";
 
 
-    // Reset statistics
+    // Statistics
 
     faceCount.textContent =
         "0";
@@ -295,21 +473,19 @@ function stopCamera() {
         "";
 
 
-    // Hide warning
+    // Warning
 
     warningBox.style.display =
         "none";
-
 
     warningMessage.textContent =
         "No warning";
 
 
-    // Stop speech
+    // Stop voice
 
     if (
-        "speechSynthesis"
-        in window
+        "speechSynthesis" in window
     ) {
 
         window.speechSynthesis.cancel();
@@ -317,6 +493,106 @@ function stopCamera() {
     }
 
 }
+
+
+// =========================================================
+// STOP EXISTING STREAM
+// =========================================================
+
+function stopExistingStream() {
+
+    if (!stream) {
+
+        return;
+
+    }
+
+
+    stream
+        .getTracks()
+        .forEach(
+            track => track.stop()
+        );
+
+
+    stream = null;
+
+}
+
+
+// =========================================================
+// SWITCH CAMERA
+// =========================================================
+
+switchCameraBtn.addEventListener(
+    "click",
+    async () => {
+
+        currentFacingMode =
+            currentFacingMode === "user"
+                ? "environment"
+                : "user";
+
+
+        if (!running) {
+
+            return;
+
+        }
+
+
+        try {
+
+            stopExistingStream();
+
+
+            stream =
+                await navigator.mediaDevices
+                    .getUserMedia({
+
+                        video: {
+
+                            width: {
+                                ideal: 640
+                            },
+
+                            height: {
+                                ideal: 480
+                            },
+
+                            facingMode:
+                                currentFacingMode
+
+                        },
+
+                        audio: false
+
+                    });
+
+
+            camera.srcObject =
+                stream;
+
+
+            await camera.play();
+
+        }
+        catch (error) {
+
+            console.error(
+                "Camera switch error:",
+                error
+            );
+
+
+            alert(
+                "Could not switch camera."
+            );
+
+        }
+
+    }
+);
 
 
 // =========================================================
@@ -332,15 +608,10 @@ async function processFrame() {
     }
 
 
-    // Make sure video is ready
-
     if (
         camera.readyState >=
         HTMLMediaElement.HAVE_CURRENT_DATA
     ) {
-
-
-        // Prevent multiple requests
 
         if (!processing) {
 
@@ -373,7 +644,7 @@ async function processFrame() {
                 }
 
 
-                // Canvas size
+                // Canvas
 
                 canvas.width =
                     width;
@@ -383,10 +654,15 @@ async function processFrame() {
 
 
                 const ctx =
-                    canvas.getContext("2d");
+                    canvas.getContext(
+                        "2d",
+                        {
+                            willReadFrequently: false
+                        }
+                    );
 
 
-                // Draw camera frame
+                // Draw frame
 
                 ctx.drawImage(
                     camera,
@@ -397,7 +673,7 @@ async function processFrame() {
                 );
 
 
-                // Convert frame to JPEG
+                // Convert to JPEG
 
                 const blob =
                     await new Promise(
@@ -406,7 +682,7 @@ async function processFrame() {
                             canvas.toBlob(
                                 resolve,
                                 "image/jpeg",
-                                0.70
+                                0.65
                             );
 
                         }
@@ -416,13 +692,13 @@ async function processFrame() {
                 if (!blob) {
 
                     throw new Error(
-                        "Could not create image blob."
+                        "Could not create image."
                     );
 
                 }
 
 
-                // Create FormData
+                // FormData
 
                 const formData =
                     new FormData();
@@ -435,7 +711,7 @@ async function processFrame() {
                 );
 
 
-                // Send frame to Flask
+                // Send to Flask
 
                 const response =
                     await fetch(
@@ -464,32 +740,28 @@ async function processFrame() {
 
 
                 // =================================================
-                // PROCESS RESPONSE
+                // RESPONSE
                 // =================================================
 
                 if (data.success) {
 
 
-                    // -------------------------------------------------
-                    // DISPLAY PROCESSED IMAGE
-                    // -------------------------------------------------
+                    // Processed image
 
                     output.src =
                         "data:image/jpeg;base64," +
                         data.image;
 
 
-                    // -------------------------------------------------
-                    // FACE COUNT
-                    // -------------------------------------------------
+                    // Face
 
                     faceCount.textContent =
                         data.face_count;
 
 
-                    // -------------------------------------------------
-                    // PHONE STATUS
-                    // -------------------------------------------------
+                    // =================================================
+                    // PHONE
+                    // =================================================
 
                     if (
                         data.phone_detected
@@ -497,7 +769,6 @@ async function processFrame() {
 
                         phoneStatus.textContent =
                             "Detected";
-
 
                         phoneStatus.style.color =
                             "#dc2626";
@@ -508,16 +779,15 @@ async function processFrame() {
                         phoneStatus.textContent =
                             "None";
 
-
                         phoneStatus.style.color =
                             "#16a34a";
 
                     }
 
 
-                    // -------------------------------------------------
-                    // SAFETY STATUS
-                    // -------------------------------------------------
+                    // =================================================
+                    // SAFETY
+                    // =================================================
 
                     safetyStatus.textContent =
                         data.status;
@@ -528,14 +798,10 @@ async function processFrame() {
                         "WARNING"
                     ) {
 
-                        // Red safety box
-
                         safetyBox.classList.add(
                             "warning-active"
                         );
 
-
-                        // Show warning
 
                         warningBox.style.display =
                             "block";
@@ -545,21 +811,19 @@ async function processFrame() {
                             data.message;
 
 
-                        // Voice warning
+                        overlayStatus.textContent =
+                            "⚠ Phone Detected";
+
 
                         playWarning();
 
                     }
                     else {
 
-                        // Remove warning style
-
                         safetyBox.classList.remove(
                             "warning-active"
                         );
 
-
-                        // Hide warning
 
                         warningBox.style.display =
                             "none";
@@ -568,12 +832,16 @@ async function processFrame() {
                         warningMessage.textContent =
                             data.message;
 
+
+                        overlayStatus.textContent =
+                            "✓ Monitoring";
+
                     }
 
 
-                    // -------------------------------------------------
+                    // =================================================
                     // FPS
-                    // -------------------------------------------------
+                    // =================================================
 
                     frameCounter++;
 
@@ -596,7 +864,6 @@ async function processFrame() {
 
 
                         frameCounter = 0;
-
 
                         lastFrameTime =
                             currentTime;
@@ -633,13 +900,11 @@ async function processFrame() {
     }
 
 
-    // Process next frame
-
     if (running) {
 
         setTimeout(
             processFrame,
-            50
+            80
         );
 
     }
@@ -657,8 +922,6 @@ function playWarning() {
         Date.now();
 
 
-    // 3-second cooldown
-
     if (
         now - lastWarningTime <
         3000
@@ -673,8 +936,6 @@ function playWarning() {
         now;
 
 
-    // Browser supports speech?
-
     if (
         !(
             "speechSynthesis"
@@ -686,8 +947,6 @@ function playWarning() {
 
     }
 
-
-    // Stop previous speech
 
     window.speechSynthesis.cancel();
 
@@ -713,3 +972,17 @@ function playWarning() {
     );
 
 }
+
+
+// =========================================================
+// PAGE EXIT
+// =========================================================
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+
+        stopExistingStream();
+
+    }
+);

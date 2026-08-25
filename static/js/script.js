@@ -1,4 +1,3 @@
-javascript
 // =========================================================
 // SMARTVISION PWA
 // YOLO-ONLY VERSION

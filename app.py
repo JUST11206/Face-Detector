@@ -3,422 +3,241 @@ import os
 import cv2
 import numpy as np
 import base64
-
 from ultralytics import YOLO
+import logging
 
+# =========================================================
+# LOGGING
+# =========================================================
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # =========================================================
 # FLASK APP
 # =========================================================
-
 app = Flask(__name__)
 
-
 # =========================================================
-# YOLO MODEL
+# YOLO MODEL INITIALIZATION
 # =========================================================
 
-# Get the directory where app.py is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Path to YOLO model
 MODEL_PATH = os.path.join(BASE_DIR, "yolo11n.pt")
 
-# Load YOLO model once when the application starts
-model = YOLO(MODEL_PATH)
-
+# Auto-download model if not present
+try:
+    if not os.path.exists(MODEL_PATH):
+        logger.info("Downloading YOLO11n model...")
+        model = YOLO("yolo11n.pt")  # Auto-downloads to cache
+        model.save(MODEL_PATH)
+    else:
+        model = YOLO(MODEL_PATH)
+    logger.info("✓ YOLO model loaded successfully")
+except Exception as e:
+    logger.error(f"Model loading error: {e}")
+    model = None
 
 # =========================================================
-# COCO CLASS IDs
+# COCO CLASSES
 # =========================================================
-
-# COCO:
-# 0  = person
-# 67 = cell phone
-
 PERSON_CLASS = 0
 CELL_PHONE_CLASS = 67
 
-
 # =========================================================
-# HOME
+# ROUTES
 # =========================================================
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
-
-# =========================================================
-# DETECTION API
-# =========================================================
+@app.route("/health")
+def health():
+    model_status = "loaded" if model else "failed"
+    return jsonify({
+        "status": "ok",
+        "model": "YOLO11n",
+        "detector": "YOLO-only",
+        "model_status": model_status
+    })
 
 @app.route("/detect", methods=["POST"])
 def detect():
-
+    """
+    Receive camera frame, detect phones, return annotated image
+    """
     try:
-
-        # =================================================
-        # RECEIVE CAMERA FRAME
-        # =================================================
+        # =====================================================
+        # RECEIVE AND VALIDATE FRAME
+        # =====================================================
+        
+        if model is None:
+            return jsonify({
+                "success": False,
+                "message": "YOLO model not loaded"
+            }), 500
 
         file = request.files.get("frame")
-
-        if file is None:
-
+        if not file:
             return jsonify({
                 "success": False,
-                "message": "No camera frame received."
+                "message": "No frame received"
             }), 400
-
-
-        # =================================================
-        # READ IMAGE
-        # =================================================
 
         image_bytes = file.read()
-
         if not image_bytes:
-
             return jsonify({
                 "success": False,
-                "message": "Empty camera frame received."
+                "message": "Empty frame"
             }), 400
 
-
-        # Convert bytes to NumPy array
-        np_array = np.frombuffer(
-            image_bytes,
-            np.uint8
-        )
-
-
-        # Decode image
-        img = cv2.imdecode(
-            np_array,
-            cv2.IMREAD_COLOR
-        )
-
+        # =====================================================
+        # DECODE IMAGE
+        # =====================================================
+        
+        np_array = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
 
         if img is None:
-
             return jsonify({
                 "success": False,
-                "message": "Could not decode camera frame."
+                "message": "Could not decode frame"
             }), 400
 
+        original_img = img.copy()
 
-        # =================================================
+        # =====================================================
         # YOLO DETECTION
-        # =================================================
+        # =====================================================
+        
+        # Lower confidence threshold for better detection
+        results = model(img, verbose=False, conf=0.35, iou=0.45)
 
-        results = model(
-            img,
-            verbose=False,
-            conf=0.40
-        )
-
-
-        # =================================================
-        # VARIABLES
-        # =================================================
-
+        # =====================================================
+        # PROCESS RESULTS
+        # =====================================================
+        
         phone_detected = False
         phone_count = 0
-
-        # Kept for compatibility with your existing frontend.
-        #
-        # YOLO11n COCO does not have a face class.
-        # Therefore we do NOT incorrectly treat "person"
-        # as a face.
-        face_count = 0
-
-
-        # =================================================
-        # PROCESS YOLO RESULTS
-        # =================================================
+        person_count = 0
+        detections = []
 
         for result in results:
-
             if result.boxes is None:
                 continue
 
-
             for box in result.boxes:
+                class_id = int(box.cls[0].item())
+                confidence = float(box.conf[0].item())
+                coordinates = box.xyxy[0].tolist()
+                x1, y1, x2, y2 = map(int, coordinates)
 
-                # -----------------------------------------
-                # CLASS ID
-                # -----------------------------------------
+                # =====================================================
+                # PERSON DETECTION
+                # =====================================================
+                
+                if class_id == PERSON_CLASS:
+                    person_count += 1
+                    
+                    # Draw person bounding box (light blue)
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 200, 0), 2)
+                    label = f"PERSON {confidence * 100:.0f}%"
+                    cv2.putText(
+                        img, label,
+                        (x1, max(y1 - 10, 25)),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6, (255, 200, 0), 2
+                    )
 
-                class_id = int(
-                    box.cls[0].item()
-                )
-
-
-                # -----------------------------------------
-                # CONFIDENCE
-                # -----------------------------------------
-
-                confidence = float(
-                    box.conf[0].item()
-                )
-
-
-                # =================================================
-                # CELL PHONE DETECTION
-                # =================================================
-
-                if class_id == CELL_PHONE_CLASS:
-
+                # =====================================================
+                # PHONE DETECTION
+                # =====================================================
+                
+                elif class_id == CELL_PHONE_CLASS:
                     phone_detected = True
                     phone_count += 1
-
-
-                    # -----------------------------------------
-                    # GET COORDINATES
-                    # -----------------------------------------
-
-                    coordinates = (
-                        box.xyxy[0]
-                        .tolist()
-                    )
-
-
-                    x1, y1, x2, y2 = map(
-                        int,
-                        coordinates
-                    )
-
-
-                    # -----------------------------------------
-                    # PHONE BOUNDING BOX
-                    # -----------------------------------------
-
-                    cv2.rectangle(
-                        img,
-                        (x1, y1),
-                        (x2, y2),
-                        (0, 0, 255),
-                        3
-                    )
-
-
-                    # -----------------------------------------
-                    # PHONE LABEL
-                    # -----------------------------------------
-
-                    label = (
-                        f"PHONE "
-                        f"{confidence * 100:.0f}%"
-                    )
-
-
+                    detections.append({
+                        "type": "phone",
+                        "coords": (x1, y1, x2, y2),
+                        "confidence": confidence
+                    })
+                    
+                    # Draw phone bounding box (RED - DANGER)
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
+                    label = f"PHONE {confidence * 100:.0f}%"
                     cv2.putText(
-                        img,
-                        label,
-                        (
-                            x1,
-                            max(y1 - 10, 25)
-                        ),
+                        img, label,
+                        (x1, max(y1 - 10, 25)),
                         cv2.FONT_HERSHEY_SIMPLEX,
-                        0.7,
-                        (0, 0, 255),
-                        2
+                        0.7, (0, 0, 255), 2
                     )
 
-
-        # =================================================
+        # =====================================================
         # SAFETY STATUS
-        # =================================================
-
+        # =====================================================
+        
         if phone_detected:
-
             safety_status = "WARNING"
-
-            warning_message = (
-                "Mobile phone detected!"
-            )
-
-
-        elif face_count > 0:
-
-            safety_status = "SAFE"
-
-            warning_message = (
-                "Face detected. No phone detected."
-            )
-
-
-        else:
-
-            safety_status = "NO FACE"
-
-            warning_message = (
-                "No face detected."
-            )
-
-
-        # =================================================
-        # WARNING BANNER
-        # =================================================
-
-        if phone_detected:
-
-            # Red warning banner
-            cv2.rectangle(
-                img,
-
-                (0, 0),
-
-                (
-                    img.shape[1],
-                    60
-                ),
-
-                (0, 0, 255),
-
-                -1
-            )
-
-
-            # Warning text
+            warning_message = f"⚠️ PHONE DETECTED! ({phone_count} phone(s))"
+            
+            # Red warning banner at top
+            cv2.rectangle(img, (0, 0), (img.shape[1], 70), (0, 0, 255), -1)
             cv2.putText(
-                img,
-
-                "WARNING: PHONE DETECTED",
-
-                (20, 40),
-
+                img, "🚨 PHONE DETECTED 🚨",
+                (20, 45),
                 cv2.FONT_HERSHEY_SIMPLEX,
-
-                0.9,
-
-                (255, 255, 255),
-
-                2
+                1.0, (255, 255, 255), 2
             )
+            
+        elif person_count > 0:
+            safety_status = "SAFE"
+            warning_message = f"✓ Person detected. No phone. ({person_count} person)"
+        else:
+            safety_status = "NO PERSON"
+            warning_message = "No person detected in frame"
 
-
-        # =================================================
+        # =====================================================
         # ENCODE PROCESSED IMAGE
-        # =================================================
-
-        success, buffer = cv2.imencode(
-            ".jpg",
-            img,
-            [
-                cv2.IMWRITE_JPEG_QUALITY,
-                80
-            ]
-        )
-
-
+        # =====================================================
+        
+        success, buffer = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+        
         if not success:
-
             return jsonify({
                 "success": False,
-                "message": "Could not encode processed image."
+                "message": "Could not encode image"
             }), 500
 
+        image_base64 = base64.b64encode(buffer).decode("utf-8")
 
-        # =================================================
-        # CONVERT IMAGE TO BASE64
-        # =================================================
-
-        image_base64 = (
-            base64
-            .b64encode(buffer)
-            .decode("utf-8")
-        )
-
-
-        # =================================================
-        # API RESPONSE
-        # =================================================
-        #
-        # IMPORTANT:
-        # These field names are kept exactly the same
-        # as your existing frontend API.
-        #
-        # =================================================
-
+        # =====================================================
+        # RESPONSE
+        # =====================================================
+        
         return jsonify({
-
             "success": True,
-
-            "face_count": face_count,
-
+            "face_count": person_count,  # For frontend compatibility
             "phone_detected": phone_detected,
-
             "phone_count": phone_count,
-
+            "person_count": person_count,
             "status": safety_status,
-
             "message": warning_message,
-
-            "image": image_base64
-
+            "image": image_base64,
+            "detections": detections
         })
 
-
-    # =====================================================
-    # ERROR HANDLING
-    # =====================================================
-
     except Exception as e:
-
-        print(
-            "Detection error:",
-            str(e)
-        )
-
-
+        logger.error(f"Detection error: {str(e)}")
         return jsonify({
-
             "success": False,
-
             "message": str(e)
-
         }), 500
 
-
 # =========================================================
-# HEALTH CHECK
-# =========================================================
-
-@app.route("/health")
-def health():
-
-    return jsonify({
-
-        "status": "ok",
-
-        "model": "YOLO11n",
-
-        "detector": "YOLO-only"
-
-    })
-
-
-# =========================================================
-# RUN APPLICATION
+# RUN
 # =========================================================
 
 if __name__ == "__main__":
-
-    # Render provides the PORT environment variable.
-    # Local development will use 5000.
-
-    port = int(
-        os.environ.get(
-            "PORT",
-            5000
-        )
-    )
-
-
-    app.run(
-        host="0.0.0.0",
-        port=port,
-        debug=False
-    )
+    port = int(os.environ.get("PORT", 5000))
+    logger.info(f"Starting SmartVision on port {port}")
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
